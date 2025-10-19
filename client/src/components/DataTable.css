@@ -1,0 +1,110 @@
+.table-container {
+  overflow-x: auto; /* Allows horizontal scrolling on small screens */
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse; /* Clean, modern table lines */
+  table-layout: fixed; /* Prevents cell content from stretching columns */
+}
+
+.data-table th,
+.data-table td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #dfe6e9;
+  white-space: nowrap; /* Keeps content on one line */
+  overflow: hidden;
+  text-overflow: ellipsis; /* Adds '...' if content is too long */
+}
+
+/* Table Header */
+.data-table thead tr {
+  background-color: #f9fafb;
+}
+
+.data-table th {
+  font-size: 12px;
+  font-weight: 600;
+  color: #636e72;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Table Body */
+.data-table tbody tr:hover {
+  background-color: #f7f9fa;
+}
+
+.data-table td {
+  font-size: 14px;
+  color: #2d3436;
+}
+
+/* --- Scan Column Elements --- */
+
+/* The indicator dot */
+.status-indicator {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #b2bec3; /* Default: gray */
+  margin-right: 10px;
+  vertical-align: middle;
+}
+
+.status-indicator.active {
+  background-color: #2ecc71; /* Green */
+  box-shadow: 0 0 8px rgba(46, 204, 113, 0.5);
+}
+
+.status-indicator.error {
+  background-color: #e74c3c; /* Red */
+}
+
+/* The loading spinner */
+.loader {
+  display: inline-block;
+  border: 2px solid #f3f3f3;
+  border-top: 2px solid #3498db;
+  border-radius: 50%;
+  width: 14px;
+  height: 14px;
+  animation: spin 1s linear infinite;
+  vertical-align: middle;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Scan Button */
+.scan-button {
+  background-color: #ffffff;
+  color: #0984e3;
+  border: 1px solid #0984e3;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.scan-button:hover:not(:disabled) {
+  background-color: #0984e3;
+  color: white;
+}
+
+.scan-button:disabled {
+  border-color: #b2bec3;
+  color: #b2bec3;
+  cursor: not-allowed;
+}
