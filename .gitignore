@@ -44,3 +44,6 @@ Thumbs.db
 coverage/
 client/coverage/
 server/coverage/
+server/credentials.json
+
+credentials.json
