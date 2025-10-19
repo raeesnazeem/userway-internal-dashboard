@@ -46,4 +46,4 @@ client/coverage/
 server/coverage/
 server/credentials.json
 
-credentials.json
+client/credentials.json
