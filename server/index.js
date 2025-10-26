@@ -597,13 +597,20 @@ s.setAttribute("src", "https://cdn.userway.org/widget.js");
       logToClient("Authenticating with Google Sheets...")
       const auth = new google.auth.GoogleAuth({
         keyFile: credsFile,
-        scopes: ["https://www.googleapis.com/auth/spreadsheets.readonly"],
+        scopes: ["https://www.googleapis.com/auth/spreadsheets"],
       })
 
+   
+
       const sheets = google.sheets({ version: "v4", auth })
+
+
+      const BULK_INJECT_SHEET_ID = process.env.BULK_INJECT_SHEET_ID
+
+         console.log("🧩 DEBUG RANGE:", { spreadsheetId: BULK_INJECT_SHEET_ID, range })
       const res = await sheets.spreadsheets.values.get({
         spreadsheetId: sheetId,
-        range,
+        range: range,
       })
       const rows = res.data.values
       if (!rows || rows.length === 0) throw new Error("No data found in sheet")
@@ -902,6 +909,7 @@ s.setAttribute("src", "https://cdn.userway.org/widget.js");
     }
 
     // ---------- Orchestrator ----------
+    if (!config.range) config.range = "Sheet1!B1:E"
     try {
       const sites = await getSitesFromSheet(
         config.sheetId,
