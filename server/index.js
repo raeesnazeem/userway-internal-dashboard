@@ -29,8 +29,8 @@
 // // --- Google Sheets Auth ---
 // const SHEETS_AUTH_SCOPES = ["https://www.googleapis.com/auth/spreadsheets"];
 // const CREDENTIALS_PATH = "./credentials.json";
-// const MAIN_SHEET_ID = "18plsCTXbOGaScL8knPnwyr31QTXtGTW5cl8AO8Fapi4"; // From sheet URL
-// const HISTORY_SHEET_ID = "1bzzie1HTH1LmL9R-TybdKzoTuAIhakN2D6XvXPTxNCY"; // From sheet URL
+// const MAIN_SHEET_ID = "" From sheet URL
+// const HISTORY_SHEET_ID = ""
 
 // async function getAuthClient() {
 //   const auth = new google.auth.GoogleAuth({
@@ -452,6 +452,13 @@
 //   console.log(`🚀 Server listening on http://localhost:${PORT}`);
 // });
 
+const path = require("path");
+const dotenv = require("dotenv");
+const fs = require("fs");
+
+
+dotenv.config({ path: path.resolve(__dirname, "./.env") });
+
 const express = require("express")
 const http = require("http")
 const { Server } = require("socket.io")
@@ -459,10 +466,18 @@ const cors = require("cors")
 const { google } = require("googleapis")
 const axios = require("axios")
 const cheerio = require("cheerio")
-const fs = require("fs")
 const puppeteer = require("puppeteer")
-require("dotenv").config()
 
+
+
+// Resolve to absolute path based on the location of index.js
+const CREDENTIALS_PATH = path.resolve(__dirname, process.env.CREDENTIALS_PATH || "credentials.json");
+
+// Validate early
+if (!fs.existsSync(CREDENTIALS_PATH)) {
+  console.error(`❌ FATAL: Credentials file not found at ${CREDENTIALS_PATH}`);
+  process.exit(1);
+}
 const app = express()
 app.use(cors())
 app.use(express.json())
@@ -476,27 +491,6 @@ const io = new Server(server, {
   },
 })
 
-// // --- Google Sheets Auth ---
-// const SHEETS_AUTH_SCOPES = ["https://www.googleapis.com/auth/spreadsheets"];
-// const CREDENTIALS_PATH = "./credentials.json";
-// const MAIN_SHEET_ID = "18plsCTXbOGaScL8knPnwyr31QTXtGTW5cl8AO8Fapi4"; // From sheet URL
-// const HISTORY_SHEET_ID = "1bzzie1HTH1LmL9R-TybdKzoTuAIhakN2D6XvXPTxNCY"; // From sheet URL
-
-// async function getAuthClient() {
-//   const auth = new google.auth.GoogleAuth({
-//     keyFile: CREDENTIALS_PATH,
-//     scopes: SHEETS_AUTH_SCOPES,
-//   });
-//   return await auth.getClient();
-// }
-
-// async function getSheetsApi() {
-//   const authClient = await getAuthClient();
-//   return google.sheets({ version: "v4", auth: authClient });
-// }
-
-// --- STOP FLAG ---
-// This object will hold the stop status for each socket connection
 const stopFlags = {}
 
 io.on("connection", (socket) => {
@@ -528,7 +522,7 @@ io.on("connection", (socket) => {
       sheetId: process.env.BULK_INJECT_SHEET_ID,
       concurrency: 1,
       headless: true,
-      credentials: process.env.CREDENTIALS_PATH,
+      credentials: CREDENTIALS_PATH,
       ...options,
     }
 
@@ -974,22 +968,32 @@ s.setAttribute("src", "https://cdn.userway.org/widget.js");
 })
 
 const SHEETS_AUTH_SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
-const CREDENTIALS_PATH = process.env.CREDENTIALS_PATH
+
 
 // --- Sheet IDs for API Endpoints ---
 const MAIN_SHEET_ID = process.env.MAIN_SHEET_ID
 const HISTORY_SHEET_ID = process.env.HISTORY_SHEET_ID
 const URL_LOOKUP_SHEET_ID = process.env.URL_LOOKUP_SHEET_ID
 
+
+
+
+
 // --- UserWay Account ID (for /api/scan) ---
 const USERWAY_ACCOUNT_ID = process.env.USERWAY_ACCOUNT_ID
 
+if (!MAIN_SHEET_ID) console.warn("⚠️ MAIN_SHEET_ID not found in .env");
+if (!USERWAY_ACCOUNT_ID) console.warn("⚠️ USERWAY_ACCOUNT_ID not found in .env");
+
 async function getAuthClient() {
+  if (!CREDENTIALS_PATH || !fs.existsSync(CREDENTIALS_PATH)) {
+    throw new Error(`Credentials file missing at ${CREDENTIALS_PATH}`)
+  }
   const auth = new google.auth.GoogleAuth({
     keyFile: CREDENTIALS_PATH,
     scopes: SHEETS_AUTH_SCOPES,
   })
-  return await auth.getClient()
+  return auth.getClient()
 }
 
 async function getSheetsApi() {
