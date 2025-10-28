@@ -1,0 +1,19 @@
+[
+  {
+    "url": "dermacurevalencia.com",
+    "status": "skipped",
+    "builder": "unknown",
+    "message": "Pro script already present."
+  },
+  {
+    "url": "reflectionsmedical.com",
+    "status": "ok",
+    "builder": "unknown"
+  },
+  {
+    "url": "calcoastdental.com",
+    "status": "skipped",
+    "builder": "unknown",
+    "message": "Pro script already present."
+  }
+]

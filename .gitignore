@@ -3,6 +3,7 @@ node_modules/
 client/node_modules/
 server/node_modules/
 
+
 # Build and output directories
 build/
 client/build/
@@ -39,6 +40,7 @@ Thumbs.db
 *.tgz
 .pnp
 .pnp.js
+client/App-backup
 
 # Test coverage
 coverage/

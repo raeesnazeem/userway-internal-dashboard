@@ -1,0 +1,17 @@
+[
+  {
+    "url": "dermacurevalencia.com",
+    "status": "error",
+    "error": "installSuccess is not defined"
+  },
+  {
+    "url": "reflectionsmedical.com",
+    "status": "error",
+    "error": "installSuccess is not defined"
+  },
+  {
+    "url": "calcoastdental.com",
+    "status": "error",
+    "error": "installSuccess is not defined"
+  }
+]

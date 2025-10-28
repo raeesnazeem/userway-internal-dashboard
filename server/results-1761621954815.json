@@ -1,0 +1,82 @@
+[
+  {
+    "url": "michaeldiazmd.com",
+    "status": "ok",
+    "builder": "elementor"
+  },
+  {
+    "url": "https://aestheticcenterofrichmonddermatology.com/",
+    "status": "ok",
+    "builder": "elementor"
+  },
+  {
+    "url": "https://gloderma.com/",
+    "status": "ok",
+    "builder": "elementor"
+  },
+  {
+    "url": "https://vidabellamedspa.com/",
+    "status": "error",
+    "error": "Login failed for both usernames. Check credentials."
+  },
+  {
+    "url": "https://thegraiviercenter.com/",
+    "status": "ok",
+    "builder": "elementor"
+  },
+  {
+    "url": "https://trubeautybytrevor.com/",
+    "status": "ok",
+    "builder": "elementor"
+  },
+  {
+    "url": "https://thrivewellspa.com/",
+    "status": "ok",
+    "builder": "elementor"
+  },
+  {
+    "url": "https://scottsdalesalonstudiosaz.com/",
+    "status": "error",
+    "error": "Login failed for both usernames. Check credentials."
+  },
+  {
+    "url": "https://salontabuaz.com/",
+    "status": "error",
+    "error": "Login failed for both usernames. Check credentials."
+  },
+  {
+    "url": "https://refinekcaesthetics.com/",
+    "status": "ok",
+    "builder": "elementor"
+  },
+  {
+    "url": "https://empoweredmedspa.com/",
+    "status": "ok",
+    "builder": "elementor"
+  },
+  {
+    "url": "https://secretsaesthetics.com/",
+    "status": "error",
+    "error": "Login failed for both usernames. Check credentials."
+  },
+  {
+    "url": "https://skinbossmedspa.com/",
+    "status": "ok",
+    "builder": "unknown"
+  },
+  {
+    "url": "https://faithfamhealth.com/",
+    "status": "ok",
+    "builder": "elementor"
+  },
+  {
+    "url": "https://inveinspa.com/",
+    "status": "error",
+    "error": "Login failed for both usernames. Check credentials."
+  },
+  {
+    "url": "windermeremedicalspa.com",
+    "status": "ok",
+    "builder": "elementor"
+  }
+]

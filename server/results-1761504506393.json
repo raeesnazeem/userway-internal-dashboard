@@ -1,0 +1,12 @@
+[
+  {
+    "url": "reflectionsmedical.com",
+    "status": "error",
+    "error": "socket is not defined"
+  },
+  {
+    "url": "calcoastdental.com",
+    "status": "error",
+    "error": "socket is not defined"
+  }
+]
