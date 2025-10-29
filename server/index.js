@@ -83,6 +83,25 @@ s.setAttribute("src", "https://cdn.userway.org/widget.js");
 })(document)
 `
 
+function rgbToHex(rgb) {
+  if (!rgb || typeof rgb !== "string") return rgb
+  // If it's already hex, return it
+  if (rgb.startsWith("#")) return rgb
+  // If it's 'transparent' or another named color
+  if (!rgb.startsWith("rgb")) return rgb
+
+  // Match rgb(r, g, b) or rgba(r, g, b, a)
+  const match = rgb.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*[\d.]+)?\)/)
+  if (!match) return rgb // Could not parse
+
+  // Convert each part to a 2-digit hex string
+  const r = parseInt(match[1]).toString(16).padStart(2, "0")
+  const g = parseInt(match[2]).toString(16).padStart(2, "0")
+  const b = parseInt(match[3]).toString(16).padStart(2, "0")
+
+  return `#${r}${g}${b}`.toUpperCase()
+}
+
 // --- Global state for running jobs ---
 const stopFlags = {}
 const interactiveSessions = {} // Stores { browser, sitesRemaining }
@@ -132,6 +151,12 @@ io.on("connection", (socket) => {
     logToClient("Process stopped by user.")
   })
   // --- END: Job Cleanup ---
+
+  socket.on("stop-color-scan", () => {
+    logToClient("STOP signal received for color scan.")
+    stopFlags[socket.id] = true
+    logToClient("Process stopped by user.") // This triggers the UI reset
+  })
 
   // --- START: BULK INJECT LOGIC ---
   socket.on("start-bulk-inject", async (options) => {
@@ -502,6 +527,138 @@ io.on("connection", (socket) => {
     }
   })
   // --- END: NEW LISTENER ---
+
+  socket.on("start-color-scan", async () => {
+    stopFlags[socket.id] = false
+    logToClient("Starting Color Scan...")
+
+    const COLOR_SCAN_SHEET_ID = "1woWI26FBmGPz5HGmz6L5-40yts1wRkMaSc2Q18YnBps"
+    const READ_RANGE = "Sheet1!D1:D" // Column D
+    let browser
+
+    try {
+      // 1. Get Sheet Data
+      logToClient(`Fetching URLs from ${COLOR_SCAN_SHEET_ID}...`)
+      const sheets = await getSheetsApi()
+      const res = await sheets.spreadsheets.values.get({
+        spreadsheetId: COLOR_SCAN_SHEET_ID,
+        range: READ_RANGE,
+      })
+      const rows = res.data.values || []
+      const urlsToScan = rows
+        .slice(1) // Skip header
+        .map((row, index) => ({
+          url: row[0],
+          rowIndex: index + 2, // +1 for 1-based, +1 for sliced header
+        }))
+        .filter((item) => item.url && item.url.trim() !== "")
+
+      logToClient(`Found ${urlsToScan.length} URLs to scan.`)
+      if (urlsToScan.length === 0) {
+        throw new Error("No URLs found in Column D.")
+      }
+
+      // 2. Launch Puppeteer
+      logToClient("Launching browser for color scan...")
+      browser = await puppeteer.launch({
+        headless: true,
+        args: ["--no-sandbox", "--disable-setuid-sandbox"],
+      })
+
+      // 3. Loop and Scan
+      const updates = []
+      for (const { url, rowIndex } of urlsToScan) {
+        if (stopFlags[socket.id]) {
+          logToClient("Stopping scan...")
+          break
+        }
+
+        logToClient(`[${rowIndex}] Scanning ${url}...`)
+        const page = await browser.newPage()
+        await page.setDefaultNavigationTimeout(20000)
+        let color = "ERROR"
+
+        try {
+          const fullUrl = url.startsWith("http")
+            ? url
+            : `https://${url.replace(/\/+$/, "")}`
+          await page.goto(fullUrl, { waitUntil: "networkidle2" })
+
+          // --- START: POPUP CLOSE LOGIC (Request 2) ---
+          try {
+            logToClient(` -> Checking for popups...`)
+            const closeButton = await page.$(
+              'button[aria-label*="close" i], a[aria-label*="close" i]'
+            )
+            if (closeButton) {
+              logToClient(` -> Found popup, attempting to close...`)
+              await closeButton.click()
+              await page.waitForTimeout(1000) // Wait for modal to disappear
+            } else {
+              logToClient(` -> No popup found.`)
+            }
+          } catch (e) {
+            logToClient(
+              ` -> (Warning) Popup check failed: ${e.message.slice(0, 50)}...`
+            )
+          }
+          // --- END: POPUP CLOSE LOGIC ---
+
+          // --- START: HEX CONVERT LOGIC (Request 1) ---
+          const rgbColor = await page.evaluate(() => {
+            const el = document.querySelector(".feature-button")
+            if (!el) return "Not Found"
+            const style = window.getComputedStyle(el)
+            return style.backgroundColor // e.g., "rgb(255, 0, 0)"
+          })
+
+          color = rgbToHex(rgbColor) // Convert to Hex
+          logToClient(` -> Found color: ${color} (from ${rgbColor})`, "success")
+          // --- END: HEX CONVERT LOGIC ---
+        } catch (e) {
+          color = `ERROR: ${e.message.slice(0, 100)}...`
+          logToClient(` -> ${color}`, "error")
+        } finally {
+          await page.close()
+        }
+
+        // Add update request for Column F
+        updates.push({
+          range: `Sheet1!F${rowIndex}`,
+          values: [[color]],
+        })
+      } // end for loop
+
+      // 4. Batch Update Sheet
+      if (stopFlags[socket.id]) {
+        logToClient("Process stopped by user.")
+        return
+      }
+
+      if (updates.length > 0) {
+        logToClient(
+          `Scan finished. Writing ${updates.length} updates to Column F...`
+        )
+        await sheets.spreadsheets.values.batchUpdate({
+          spreadsheetId: COLOR_SCAN_SHEET_ID,
+          resource: {
+            valueInputOption: "USER_ENTERED",
+            data: updates,
+          },
+        })
+        logToClient("All updates written to sheet.", "success")
+      } else {
+        logToClient("No updates to write.")
+      }
+
+      logToClient("Color scan complete.", "success") // Triggers UI reset
+    } catch (err) {
+      logToClient(`FATAL ERROR: ${err.message}`, "error")
+    } finally {
+      if (browser) await browser.close()
+      if (stopFlags[socket.id]) logToClient("Process stopped by user.")
+    }
+  })
 }) // --- END: io.on("connection") ---
 
 // --- START: Google Sheets & Puppeteer Helpers ---

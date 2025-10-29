@@ -17,6 +17,7 @@ coverage/
 client/.env
 server/.env
 /server/*.png
+server/results-*.json
 
 # Logs
 npm-debug.log*

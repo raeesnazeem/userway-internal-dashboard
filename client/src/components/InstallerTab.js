@@ -7,9 +7,13 @@ function InstallerTab({
   setIsInjecting,
   setIsVerifying,
   bulkInjectLogs,
+  // --- ADD THESE NEW PROPS ---
+  isScanningColors,
+  setIsScanningColors,
 }) {
   const logContainerRef = useRef(null)
-  const isJobRunning = isInjecting || isVerifying
+  // --- UPDATED JOB CHECK ---
+  const isJobRunning = isInjecting || isVerifying || isScanningColors
 
   // --- Event Handlers (Moved from App.js) ---
   const handleStartInject = () => {
@@ -38,6 +42,21 @@ function InstallerTab({
     socket.emit("start-interactive-verify", {})
   }
 
+  // --- NEW HANDLER ---
+  const handleStartColorScan = () => {
+    if (!socket || isJobRunning) return
+    if (
+      !window.confirm(
+        "This will scan all sites in Column D for button colors and write to Column F. This may take a long time. Are you sure?"
+      )
+    ) {
+      return
+    }
+    setIsScanningColors(true)
+    socket.emit("start-color-scan")
+  }
+
+  // --- UPDATED HANDLER ---
   const handleStop = () => {
     if (!socket) return
 
@@ -48,6 +67,11 @@ function InstallerTab({
     if (isVerifying) {
       console.log("Emitting stop-interactive-verify")
       socket.emit("stop-interactive-verify")
+    }
+    // --- ADD THIS ---
+    if (isScanningColors) {
+      console.log("Emitting stop-color-scan")
+      socket.emit("stop-color-scan")
     }
     // Parent state will be reset by the 'bulk-inject-log' listener in App.js
   }
@@ -93,6 +117,14 @@ function InstallerTab({
                 style={{ backgroundColor: "#007bff" }}
               >
                 Verify Additions
+              </button>
+              {/* --- ADD THIS NEW BUTTON --- */}
+              <button
+                onClick={handleStartColorScan}
+                className="scan-all-button"
+                style={{ backgroundColor: "#17a2b8" }}
+              >
+                Scan Button Colors
               </button>
             </>
           ) : (

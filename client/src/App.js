@@ -48,6 +48,7 @@ function App() {
   const [bulkInjectLogs, setBulkInjectLogs] = useState([])
   const [isInjecting, setIsInjecting] = useState(false)
   const [isVerifying, setIsVerifying] = useState(false)
+  const [isScanningColors, setIsScanningColors] = useState(false)
   const [loginTestResults, setLoginTestResults] = useState([])
 
   // --- Data Fetching ---
@@ -196,10 +197,12 @@ function App() {
         newLog.message.includes("All done") ||
         newLog.message.includes("FATAL ERROR") ||
         newLog.message.includes("Process stopped by user") ||
-        newLog.message.includes("All sites processed")
+        newLog.message.includes("All sites processed") ||
+        newLog.message.includes("Color scan complete")
       ) {
         setIsInjecting(false)
         setIsVerifying(false)
+        setIsScanningColors(false)
       }
     })
 
@@ -371,6 +374,8 @@ function App() {
             setIsInjecting={setIsInjecting}
             setIsVerifying={setIsVerifying}
             bulkInjectLogs={bulkInjectLogs}
+            isScanningColors={isScanningColors}
+            setIsScanningColors={setIsScanningColors} 
           />
         )}
         {activeTab === "login-tester" && (
